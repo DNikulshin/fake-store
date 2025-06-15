@@ -1,0 +1,34 @@
+/auth/login:
+  post:
+    summary: Login user
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+    responses:
+      "200":
+        description: Login successful
+        content:
+          application/json:
+            schema:
+              $ref: "#/schemas/AuthResponse"
+
+/auth/profile:
+  get:
+    summary: Get user profile
+    security:
+      - bearerAuth: []
+    responses:
+      "200":
+        description: User profile
+        content:
+          application/json:
+            schema:
+              $ref: "#/schemas/User"

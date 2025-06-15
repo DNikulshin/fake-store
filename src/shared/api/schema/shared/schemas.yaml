@@ -1,0 +1,82 @@
+schemas:
+  Product:
+    type: object
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      price:
+        type: number
+      description:
+        type: string
+      category:
+        $ref: "#/schemas/Category"
+      images:
+        type: array
+        items:
+          type: string
+      creationAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+  Category:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      image:
+        type: string
+      creationAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+  User:
+    type: object
+    properties:
+      id:
+        type: integer
+      email:
+        type: string
+      password:
+        type: string
+      name:
+        type: string
+      role:
+        type: string
+      avatar:
+        type: string
+      creationAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+  AuthResponse:
+    type: object
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+  Error:
+    type: object
+    required:
+      - message
+      - code
+    properties:
+      message:
+        type: string
+      code:
+        type: string
+securitySchemes:
+  bearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT
