@@ -6,24 +6,21 @@ import { useNavigate } from "react-router-dom";
 
 export function useLogin() {
   const navigate = useNavigate();
-  const session = useSession();
 
+  const session = useSession();
   const loginMutation = publicRqClient.useMutation("post", "/auth/login", {
     onSuccess(data) {
-      if (data.access_token) {
-        session.login(data.access_token);
-        navigate(ROUTES.HOME);
-      }
+      session.login(data.accessToken);
+      navigate(ROUTES.HOME);
     },
   });
 
-  const login = (data: ApiSchemas["User"]) => {
+  const login = (data: ApiSchemas["LoginRequest"]) => {
     loginMutation.mutate({ body: data });
   };
 
   const errorMessage = loginMutation.isError
-    ? (loginMutation.error as ApiSchemas["Error"])?.message ??
-      "An error occurred during login"
+    ? loginMutation.error.message
     : undefined;
 
   return {

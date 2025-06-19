@@ -1,8 +1,12 @@
 import createFetchClient from "openapi-fetch";
 import createClient from "openapi-react-query";
-import { CONFIG } from "@/shared/model/config";
+import { CONFIG } from "../model/config";
 import { ApiPaths, ApiSchemas } from "./schema";
-import { useSession } from "../model/session";
+
+// Create a separate fetch client for token refresh to avoid circular dependency
+export const refreshFetchClient = createFetchClient<ApiPaths>({
+  baseUrl: CONFIG.API_BASE_URL,
+});
 
 export const fetchClient = createFetchClient<ApiPaths>({
   baseUrl: CONFIG.API_BASE_URL,
@@ -16,7 +20,9 @@ export const publicRqClient = createClient(publicFetchClient);
 
 fetchClient.use({
   async onRequest({ request }) {
-    const token = await useSession.getState().refreshToken();
+    // Import useSession here to avoid circular dependency
+    const { useSession } = await import("../model/session");
+    const token = await useSession.getState().getFreshToken();
 
     if (token) {
       request.headers.set("Authorization", `Bearer ${token}`);

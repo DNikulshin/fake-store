@@ -1,16 +1,10 @@
 openapi: 3.0.0
 info:
-  title: Fake Store API
+  title: Fake store API
+  description: API for test fake store
   version: 1.0.0
-  description: API for the Fake Store application
-
-servers:
-  - url: https://api.escuelajs.co/api/v1
-    description: Production server
 
 components:
-  schemas:
-    $ref: ./shared/schemas.yaml#/schemas
   securitySchemes:
     bearerAuth:
       type: http
@@ -20,93 +14,23 @@ components:
 paths:
   /products:
     get:
-      summary: Get all products
-      responses:
-        "200":
-          description: List of products
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+      $ref: "./endpoints/products.yaml#/getAllProducts"
+
     post:
-      summary: Create a new product
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Product"
-      responses:
-        "201":
-          description: Product created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
+      $ref: "./endpoints/products.yaml#/createProduct"
 
-  /products/{id}:
-    get:
-      summary: Get product by ID
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Product details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Product"
-
-  /categories:
-    get:
-      summary: Get all categories
-      responses:
-        "200":
-          description: List of categories
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Category"
+  /products/{productId}:
+    delete:
+      $ref: "./endpoints/products.yaml#/deleteProduct"
 
   /auth/login:
     post:
-      summary: Login user
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password:
-                  type: string
-      responses:
-        "200":
-          description: Login successful
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthResponse"
+      $ref: "./endpoints/auth.yaml#/login"
 
-  /auth/profile:
-    get:
-      summary: Get user profile
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: User profile
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
+  /auth/register:
+    post:
+      $ref: "./endpoints/auth.yaml#/register"
+
+  /auth/refresh:
+    post:
+      $ref: "./endpoints/auth.yaml#/refresh"

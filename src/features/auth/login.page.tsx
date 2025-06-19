@@ -11,7 +11,7 @@ function LoginPage() {
       form={<LoginForm />}
       footerText={
         <>
-          Нет аккаунта? <Link to={ROUTES.LOGIN}>Зарегистрироваться</Link>
+          Нет аккаунта? <Link to={ROUTES.REGISTER}>Зарегистрироваться</Link>
         </>
       }
     />

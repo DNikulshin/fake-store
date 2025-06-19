@@ -1,71 +1,67 @@
-import { useState } from "react";
-import { jwtDecode } from "jwt-decode";
 import { createGStore } from "create-gstore";
-import { publicFetchClient } from "../api/istance";
+import { jwtDecode } from "jwt-decode";
 
-type Session = {
+import { useMemo, useState } from "react";
+import { refreshFetchClient } from "../api/istance";
+
+export type Session = {
   userId: string;
   email: string;
   exp: number;
-  iat: number;
 };
 
-const TOKEN_KEY = "token";
-
-let refreshTokenPromise: Promise<string | null> | null = null;
+let refreshTokenPromise: Promise<{ data?: { accessToken: string } }> | null =
+  null;
 
 export const useSession = createGStore(() => {
-  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY));
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
 
-  const login = (token: string) => {
-    localStorage.setItem(TOKEN_KEY, token);
+  const updateToken = (token: string) => {
+    localStorage.setItem("token", token);
     setToken(token);
   };
 
-  const logout = () => {
-    localStorage.removeItem(TOKEN_KEY);
+  const removeToken = () => {
+    localStorage.removeItem("token");
     setToken(null);
   };
 
-  const session = token ? jwtDecode<Session>(token) : null;
-
-  const refreshToken = async () => {
+  const getFreshToken = async () => {
     if (!token) {
       return null;
     }
 
-    const session = jwtDecode<Session>(token);
+    const res = jwtDecode<{ exp: number }>(token);
 
-    if (session.exp < Date.now() / 1000) {
+    if (res.exp < Date.now() / 1000) {
       if (!refreshTokenPromise) {
-        refreshTokenPromise = publicFetchClient
-          .POST("/auth/refresh")
-          .then((r) => r.data?.accessToken ?? null)
-          .then((newToken) => {
-            if (newToken) {
-              login(newToken);
-              return newToken;
-            } else {
-              logout();
-              return null;
-            }
-          })
-          .finally(() => {
-            refreshTokenPromise = null;
-          });
+        refreshTokenPromise = refreshFetchClient.POST("/auth/refresh").finally(() => {
+          refreshTokenPromise = null;
+        });
       }
 
-      const newToken = await refreshTokenPromise;
+      const res = await refreshTokenPromise;
 
-      if (newToken) {
-        return newToken;
-      } else {
-        return null;
+      if (res.data) {
+        updateToken(res.data.accessToken);
+        return res.data.accessToken;
       }
+
+      return null;
     }
 
     return token;
   };
 
-  return { refreshToken, login, logout, session };
+  const session = useMemo(
+    () => (!token ? null : jwtDecode<Session>(token)),
+    [token]
+  );
+
+  return {
+    session,
+    getFreshToken,
+    logout: removeToken,
+    login: updateToken,
+  };
 });

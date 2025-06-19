@@ -30,6 +30,8 @@ export interface paths {
                         "application/json": components["schemas"]["Product"][];
                     };
                 };
+                400: components["responses"]["BadRequestError"];
+                401: components["responses"]["UnauthorizedError"];
             };
         };
         put?: never;
@@ -47,7 +49,7 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description Product created */
+                /** @description Product created successfully */
                 201: {
                     headers: {
                         [name: string]: unknown;
@@ -56,6 +58,7 @@ export interface paths {
                         "application/json": components["schemas"]["Product"];
                     };
                 };
+                401: components["responses"]["UnauthorizedError"];
             };
         };
         delete?: never;
@@ -64,75 +67,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/products/{id}": {
+    "/products/{productId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get product by ID */
-        get: {
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a product */
+        delete: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
-                    id: number;
+                    productId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Product details */
-                200: {
+                /** @description Product deleted successfully */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content: {
-                        "application/json": components["schemas"]["Product"];
-                    };
+                    content?: never;
                 };
+                401: components["responses"]["UnauthorizedError"];
+                404: components["responses"]["NotFoundError"];
             };
         };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/categories": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get all categories */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description List of categories */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Category"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -157,10 +124,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": {
-                        email?: string;
-                        password?: string;
-                    };
+                    "application/json": components["schemas"]["LoginRequest"];
                 };
             };
             responses: {
@@ -173,6 +137,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthResponse"];
                     };
                 };
+                401: components["responses"]["UnauthorizedError"];
             };
         };
         delete?: never;
@@ -181,36 +146,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/profile": {
+    "/auth/register": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get user profile */
-        get: {
+        get?: never;
+        put?: never;
+        /** Register new user */
+        post: {
             parameters: {
                 query?: never;
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RegisterRequest"];
+                };
+            };
+            responses: {
+                /** @description Registration successful */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthResponse"];
+                    };
+                };
+                400: components["responses"]["BadRequestError"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh access token */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: {
+                    refreshToken?: string;
+                };
+            };
             requestBody?: never;
             responses: {
-                /** @description User profile */
+                /** @description Access token refreshed successfully */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["User"];
+                        "application/json": components["schemas"]["AuthResponse"];
                     };
                 };
+                401: components["responses"]["UnauthorizedError"];
             };
         };
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -221,49 +230,69 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        Category: {
-            id?: number;
-            name?: string;
-            image?: string;
-            /** Format: date-time */
-            creationAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-        };
         Product: {
-            id?: number;
-            title?: string;
-            price?: number;
-            description?: string;
-            category?: components["schemas"]["Category"];
-            images?: string[];
-            /** Format: date-time */
-            creationAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-        };
-        AuthResponse: {
-            access_token?: string;
-            refresh_token?: string;
-        };
-        User: {
-            id?: number;
-            email?: string;
-            password?: string;
+            id: string;
+            title: string;
             name?: string;
-            role?: string;
-            avatar?: string;
-            /** Format: date-time */
-            creationAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
+            description: string;
+            price: number;
+            images: string[];
         };
         Error: {
             message: string;
             code: string;
         };
+        LoginRequest: {
+            /** Format: email */
+            email: string;
+            /** Format: password */
+            password: string;
+        };
+        User: {
+            id: string;
+            /** Format: email */
+            email: string;
+        };
+        AuthResponse: {
+            accessToken: string;
+            user: components["schemas"]["User"];
+        };
+        RegisterRequest: {
+            /** Format: email */
+            email: string;
+            /** Format: password */
+            password: string;
+        };
     };
-    responses: never;
+    responses: {
+        /** @description Bad request */
+        BadRequestError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Unauthorized */
+        UnauthorizedError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Resource not found */
+        NotFoundError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+    };
     parameters: never;
     requestBodies: never;
     headers: never;
